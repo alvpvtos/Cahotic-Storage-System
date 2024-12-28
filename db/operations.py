@@ -4,11 +4,16 @@ from db.dbconfig import (
     Shelf,
     ShelfContainer,
     ContainerContent,
+    ProductIdentifier,
     engine,
 )
 from sqlalchemy.orm import Session
 from  sqlalchemy.exc import IntegrityError
-from sqlalchemy import select, insert
+from sqlalchemy import (
+    select,
+    delete,
+    insert,
+)
 import secrets
 
 
@@ -66,6 +71,26 @@ def add_contaiers_to_shelf(containers:list[dict]):
         e.add_detail("You might be trying to add a container to a shelf that is already asigned to another shelf")
         raise e
     
+def unbind_containers_from_shelfs(containers:list[str]):
+    """Unbinds or "removes" a single or multiple containers from a shelf.\n
+    Multiple containers can be removed at the same time from the same or different shelf.
+
+    Args:
+        containers (list[str]): A list of containers to be unbound from a shelf. ex:\n
+        cont = [
+            "c51441d2f4cfb275bf28c3b4f3c30afce",  
+            "cf8ddc0c29501413f16c3d5eabeb9a700",  
+            "cdf92985c5e7b23191c7c1a2a49fd5f56",  
+        ]
+    """
+
+    # https://docs.sqlalchemy.org/en/20/orm/queryguide/dml.html#orm-update-and-delete-with-custom-where-criteria
+    with Session(engine) as session:
+
+        stmt = delete(ShelfContainer).where(ShelfContainer.container_id.in_(containers))
+        session.execute(stmt)
+        session.commit()
+
 
 def inspect_shelf_containers(shelf_id: str) -> list:
     """Looks for a shelf with the given shelf_id and returns a list of containers it is currently holding.
@@ -84,6 +109,29 @@ def inspect_shelf_containers(shelf_id: str) -> list:
         
     return result
 
+def delete_shelfs(shelf_ids:list[str]):
+    """Delete a single or multiple shelves.
+
+    Args:
+        shelf_ids (list[str]): A list of shelves ids to be deleted.\n
+        Example:\n
+        sh = [
+            "s51441d2f4cfb275bf28c3b4f3c30afce",  
+            "sf8ddc0c29501413f16c3d5eabeb9a700",  
+            "sdf92985c5e7b23191c7c1a2a49fd5f56",  
+        ]
+    """
+    # https://docs.sqlalchemy.org/en/20/orm/queryguide/dml.html#orm-update-and-delete-with-custom-where-criteria
+    with Session(engine) as session:
+        try:
+            stmt = delete(Shelf).where(Shelf.shelf_id.in_(shelf_ids))
+            session.execute(stmt)
+            session.commit()
+        except IntegrityError as e:
+            e.add_detail(
+                "You might be trying to delete a shelf that  has  containers bound to it.\nRemove that container(s) from shelf and try again"
+            )
+            raise(e)
 
 ############# Containers #################
 
@@ -134,3 +182,61 @@ def lookup_container(id: str):
 
 
 ############# Products #################
+#nOTE create functin that modifies additional_product_ids from a product
+
+def create_product(name:str, description:str, additional_product_ids: None | list[dict] = None ) -> str:
+    """Creates a new product.
+
+    Args:
+        name (str): The desired name for the product.
+        description (str): The desired description for the product.\n
+        additional_product_ids (list[dict]): Optional argument | Used to store additional product codes such as ASINs or UPCs.\n 
+        If used, pass a list of dictionaries such as the following:\n
+        pc = [
+            {"identifier_type":"UPC", "identifier_value":"853084004477"},
+            {"identifier_type":"ASIN", "identifier_value":"B01NBKTPTS"},
+            {"identifier_type":"GTIN", "identifier_value":"00853084004477"},
+        ]      
+
+    Returns:
+        str: The unique identifier created for this product.
+    """
+
+    identifier = f"p{secrets.token_hex(16)}"
+
+    if additional_product_ids:
+
+        # Create a list of ProductIdentifier objects to pass into Product(identifiers)
+        ids = []
+        for i in additional_product_ids:
+            id = ProductIdentifier(identifier_type= i["identifier_type"], identifier_value= i["identifier_value"] )
+            ids.append(id)
+
+        with Session(engine) as session:
+
+            try:
+
+                container = Product(product_id=identifier, product_name=name, description=description, additional_identifiers=ids)
+                session.add(container)
+                session.commit()
+            
+                return identifier
+
+            except IntegrityError as e:
+                e.add_detail("You might be trying to add an additinal_identifier to this product that has already being assigned to another product")
+                raise e
+
+    else:
+        with Session(engine) as session:
+            try:
+                
+                container = Product(product_id=identifier, product_name=name, description=description)
+                session.add(container)
+                session.commit()
+
+                return identifier
+
+            except IntegrityError as e:
+                e.add_detail("You might be trying to create a product that already exists")
+                raise e
+                

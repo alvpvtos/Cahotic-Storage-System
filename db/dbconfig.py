@@ -17,13 +17,14 @@ class Product(Base):
     __tablename__ = 'products'
     
     product_id: Mapped[str] = mapped_column(String(50), primary_key=True)
-    product_name: Mapped[str] = mapped_column(String, nullable=False)
+    product_name: Mapped[str] = mapped_column(String, nullable=False, unique=True)
     description: Mapped[str] = mapped_column(String)
     created_at: Mapped[DateTime] = mapped_column(DateTime, default=func.now())
     updated_at: Mapped[DateTime] = mapped_column(DateTime, default=func.now(), onupdate=func.now())
 
+    # A list of additional identifiers 
     # Allows us to call Products.identifiers and get a list of identifiers if any are set.
-    identifiers: Mapped[list['ProductIdentifier']] = relationship(back_populates='product')
+    additional_identifiers: Mapped[list['ProductIdentifier']] = relationship(back_populates='product')
 
 # --- Product Identifiers Table ---
 class ProductIdentifier(Base):
@@ -37,7 +38,7 @@ class ProductIdentifier(Base):
     identifier_type: Mapped[str] = mapped_column(String(20), nullable=False)
     identifier_value: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
 
-    product: Mapped['Product'] = relationship(back_populates='identifiers')
+    product: Mapped['Product'] = relationship(back_populates='additional_identifiers')
 
 # --- Containers Table ---
 class Container(Base):
