@@ -93,7 +93,7 @@ class ShelfContainer(Base):
     
     shelf_container_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     shelf_id: Mapped[str] = mapped_column(ForeignKey('shelves.shelf_id'), nullable=False)
-    container_id: Mapped[str] = mapped_column(ForeignKey('containers.container_id'), nullable=False)
+    container_id: Mapped[str] = mapped_column(ForeignKey('containers.container_id'), nullable=False, unique=True)
     placed_at: Mapped[DateTime] = mapped_column(DateTime, default=func.now())
 
     shelf: Mapped['Shelf'] = relationship(back_populates='shelf_containers')
