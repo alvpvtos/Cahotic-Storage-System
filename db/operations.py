@@ -15,6 +15,7 @@ from sqlalchemy import (
     insert,
 )
 import secrets
+import json
 
 
 ############# Shelves #################
@@ -184,7 +185,7 @@ def lookup_container(id: str):
 ############# Products #################
 #nOTE create functin that modifies additional_product_ids from a product
 
-def create_product(name:str, description:str, additional_product_ids: None | list[dict] = None ) -> str:
+def create_new_product(name:str, description:str, additional_product_ids: None | list[dict] = None ) -> str:
     """Creates a new product.
 
     Args:
@@ -239,4 +240,61 @@ def create_product(name:str, description:str, additional_product_ids: None | lis
             except IntegrityError as e:
                 e.add_detail("You might be trying to create a product that already exists")
                 raise e
-                
+    
+    
+def convert_product_object_to_json(product_object:Product) -> str:
+    # work in progress, try a with statement with an sqlalchemy.orm.Session if it does not work.
+    """This function will take a db.dbconfig.Product object and convert it to a JSON string.
+
+    Args:
+        product_object (Product):A db.dbconfig.Product object.
+
+    Returns:
+        str: A JSON string.
+    """
+    
+    d = {
+        'name': product_object.product_name,
+        'description': product_object.description,
+        'product_id': product_object.product_id,
+        # this line basically creates a list of dicts if our object has additional ids in it, if not, it returns an empty list.
+        # 'additional_ids': list(map(lambda add_id: {"identifier_type":add_id.identifier_type,"value":add_id.identifier_value},product.additional_identifiers)),
+        'additional_ids': [{"identifier_type":x.identifier_type, "value":x.identifier_value} for x in product_object.additional_identifiers],
+        'date_added': product_object.created_at.isoformat(),
+    }
+    result = json.dumps(d,indent=4)
+
+    return result
+
+def search_product_by_product_id(product_id:str)-> list[dict] | None:
+    """ Will try to find the product by product_id, you can pass an entire product_id or part of it. (Useful for active search)
+
+    Args:
+        product_id (str): Example: "pe376df18d1ce5dbbcb74d0c492a872be" or "p"
+
+    Returns:
+        list[dict]None: A list of products found
+    """
+
+    with Session(engine) as session:
+
+        results = session.query(Product).filter(
+            (Product.product_id == product_id) |  # Exact match
+            (Product.product_id.like(f"%{product_id}%"))  # Partial match (contains)
+        )
+
+        matches = [convert_product_object_to_json(product) for product in results]
+        # for product in results.all():
+        #     d = {
+        #         'name': product.product_name,
+        #         'description': product.description,
+        #         'product_id': product.product_id,
+        #         # this line basically creates a list of dicts if our object has additional ids in it, if not, it returns an empty list.
+        #         # 'additional_ids': list(map(lambda add_id: {"identifier_type":add_id.identifier_type,"value":add_id.identifier_value},product.additional_identifiers)),
+        #         'additional_ids': [{"identifier_type":x.identifier_type, "value":x.identifier_value} for x in product.additional_identifiers],
+        #         'date_added': product.created_at.isoformat(),
+        #     }
+        #     matches.append(d)
+            
+
+    return matches
