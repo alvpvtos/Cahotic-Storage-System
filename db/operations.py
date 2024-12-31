@@ -10,6 +10,7 @@ from db.dbconfig import (
 from sqlalchemy.orm import Session
 from  sqlalchemy.exc import IntegrityError
 from sqlalchemy import (
+    func,
     select,
     delete,
     insert,
@@ -284,17 +285,47 @@ def search_product_by_product_id(product_id:str)-> list[dict] | None:
         )
 
         matches = [convert_product_object_to_json(product) for product in results]
-        # for product in results.all():
-        #     d = {
-        #         'name': product.product_name,
-        #         'description': product.description,
-        #         'product_id': product.product_id,
-        #         # this line basically creates a list of dicts if our object has additional ids in it, if not, it returns an empty list.
-        #         # 'additional_ids': list(map(lambda add_id: {"identifier_type":add_id.identifier_type,"value":add_id.identifier_value},product.additional_identifiers)),
-        #         'additional_ids': [{"identifier_type":x.identifier_type, "value":x.identifier_value} for x in product.additional_identifiers],
-        #         'date_added': product.created_at.isoformat(),
-        #     }
-        #     matches.append(d)
             
 
     return matches
+
+
+def search_product_by_name(product_name:str)-> list[dict] | None:
+    """ Will try to find the product by name, you can pass the full name of the product or part of it. (Useful for active search)
+
+    Args:
+        product_id (str): Example: "Pliers" or "pli"
+
+    Returns:
+        list[dict]None: A list of products found
+    """
+
+    with Session(engine) as session:
+
+        # sqlalchemy.func
+        results = session.query(Product).filter(
+            (func.lower(Product.product_name) == product_name.lower()) |  # Exact match
+            (func.lower(Product.product_name).like(f"%{product_name.lower()}%"))  # Partial match (contains)
+        )
+
+        matches = [convert_product_object_to_json(product) for product in results]
+            
+
+    return matches
+
+
+
+
+def delete_product_by_identifier(products:list[str])-> str | None:
+    """Deletes a single  or multiple products from the db.
+
+    Args:
+        product_id (list[str]): A list of unique product ids. Example ["pc85ba29f7bccdb4fc9d877da9786023b","pv34.."]
+
+    Returns:
+        str: A list of pro
+    """
+    with Session(engine) as session:
+        stmt = delete(Product).where(Product.product_id.in_(products))
+        session.execute(stmt)
+        session.commit()

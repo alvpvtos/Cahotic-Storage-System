@@ -1,5 +1,5 @@
 from sqlalchemy import String, Integer, Float, DateTime, ForeignKey, func, create_engine
-from sqlalchemy.orm import Mapped, mapped_column, relationship, DeclarativeBase
+from sqlalchemy.orm import Mapped, mapped_column, relationship, DeclarativeBase, backref
 
 DATABASE_URL = "postgresql+psycopg2://username:password@localhost/dbname"
 
@@ -24,8 +24,10 @@ class Product(Base):
 
     # A list of additional identifiers 
     # Allows us to call Products.identifiers and get a list of identifiers if any are set.
-    additional_identifiers: Mapped[list['ProductIdentifier']] = relationship(back_populates='product')
-
+    additional_identifiers: Mapped[list['ProductIdentifier']] = relationship(
+        back_populates='product',
+        cascade="all, delete-orphan" # should allow you to delete the ProductIdentifiers assosiated with it.
+    )
 # --- Product Identifiers Table ---
 class ProductIdentifier(Base):
     """
@@ -34,7 +36,7 @@ class ProductIdentifier(Base):
     __tablename__ = 'product_identifiers'
     
     identifier_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    product_id: Mapped[str] = mapped_column(ForeignKey('products.product_id'), nullable=False,)
+    product_id: Mapped[str] = mapped_column(ForeignKey('products.product_id',ondelete="CASCADE"), nullable=False)
     identifier_type: Mapped[str] = mapped_column(String(20), nullable=False)
     identifier_value: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
 
