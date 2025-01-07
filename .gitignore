@@ -171,3 +171,9 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+#db migration files
+
+db/alembic
+db/migrations
+db/alembic.ini
