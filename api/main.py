@@ -117,19 +117,65 @@ def delete_product(product_ids: Annotated[list[str], Body(openapi_examples=delet
     #     raise HTTPException(status_code=400,detail="Product does not exist")
     return HTMLResponse(content="Product deleted successfully or not")
 
+
+
+class AdditionalIds(BaseModel):
+    identifier_type: str
+    identifier_value: str
+class Product_Search_Result(BaseModel):
+    name: str
+    description: str
+    product_id: int
+    additional_ids : None | list[AdditionalIds]
+    date_added: str
+
+search_prod_responses = {
+    200:{
+        "description": "Successfull search",
+        "content": {
+            "application/json": {
+                "example":     [{
+                    "name": "Flexzilla HFZG550YW Garden Lead-In Hose 5/8 In",
+                    "description": "Flexzilla Garden Hose is engineered with a Flexible Hybrid Polymer that is both lightweight and durable. ",
+                    "product_id": "p890e865336129d669c9a96d12cd2b9d6",
+                    "additional_ids": [
+                        {
+                            "identifier_type": "UPC",
+                            "identifier_value": "853084004477"
+                        },
+                        {
+                            "identifier_type": "ASIN",
+                            "identifier_value": "B01NBKTPTS"
+                        }
+                    ],
+                    "date_added": "2025-01-08T03:43:33.850485", 
+                }, ]
+            }
+        }
+    },
+        
+}
 #search product
-@app.get("/products")
-def search_product(search: Annotated[str, Query(min_length=3)] ) -> dict:
-    """Search for a product by name.
+@app.get("/products",responses=search_prod_responses)
+def search_product(search: Annotated[str, Query(min_length=3, )] ) -> list[Product_Search_Result]:
+    """Search for a product. 
+    You can search for a product by name or unique id. The search is case-insensitive and will return a list of products that match the search query.
 
-    Args:
-        name (str): The name of the product to search for.
-
-    Returns:
-        dict: A dictionary containing the product details.
     """
-    # a = operations.search_product(name)
-    return HTMLResponse(search)
+    results = []
+    name_results = operations.search_product_by_name(search)
+    id_results = operations.search_product_by_product_id(search)
+
+    results.extend(name_results)
+    results.extend(id_results)
+
+    if results:
+        return JSONResponse(results)
+
+    raise HTTPException(
+        status_code=404,
+        detail=f"The query `{search}` did not return any results"
+    )
 
 
 
