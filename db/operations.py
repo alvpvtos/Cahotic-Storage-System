@@ -44,7 +44,7 @@ def create_new_shelf(name:str,max_capacity:int) -> str:
         
     return identifier
 
-def add_contaiers_to_shelf(containers:list[dict]):
+def add_containers_to_shelf(containers:list[dict]):
     """Allows you to add a single or multiple containers to a shelf or shelves. \n
     NOTe: Duplicate containers in a single shelf are not allowed. A container can only be stored in one shelf at the time.
 
@@ -70,12 +70,12 @@ def add_contaiers_to_shelf(containers:list[dict]):
             session.execute(insert(ShelfContainer), containers)
             session.commit()
     except IntegrityError as e:
-        e.add_detail("You might be trying to add a container to a shelf that is already asigned to another shelf")
+        e.add_detail("You might be trying to add a container to a shelf that is already aligned to another shelf")
         raise e
     
-def unbind_containers_from_shelfs(containers:list[str]):
+def unbind_containers_from_shelf(containers:list[str]):
     """Unbinds or "removes" a single or multiple containers from a shelf.\n
-    Multiple containers can be removed at the same time from the same or different shelf.
+    Multiple containers can be removed at the same time from the same from a  different shelf.
 
     Args:
         containers (list[str]): A list of containers to be unbound from a shelf. ex:\n
@@ -111,7 +111,7 @@ def inspect_shelf_containers(shelf_id: str) -> list:
         
     return result
 
-def delete_shelfs(shelf_ids:list[str]):
+def delete_shelves(shelf_ids:list[str]):
     """Delete a single or multiple shelves.
 
     Args:
@@ -225,7 +225,7 @@ def create_new_product(name:str, description:str, additional_product_ids: None |
                 return identifier
 
             except IntegrityError as e:
-                e.add_detail("You might be trying to add an additinal_identifier to this product that has already being assigned to another product")
+                e.add_detail("You might be trying to add an additional_identifier to this product that has already being assigned to another product")
                 raise e
 
     else:
