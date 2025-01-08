@@ -243,7 +243,7 @@ def create_new_product(name:str, description:str, additional_product_ids: None |
                 raise e
     
     
-def convert_product_object_to_json(product_object:Product) -> str:
+def convert_product_object_to_dict(product_object:Product) -> str:
     # work in progress, try a with statement with an sqlalchemy.orm.Session if it does not work.
     """This function will take a db.dbconfig.Product object and convert it to a JSON string.
 
@@ -254,18 +254,19 @@ def convert_product_object_to_json(product_object:Product) -> str:
         str: A JSON string.
     """
     
-    d = {
+    product = {
         'name': product_object.product_name,
         'description': product_object.description,
         'product_id': product_object.product_id,
         # this line basically creates a list of dicts if our object has additional ids in it, if not, it returns an empty list.
         # 'additional_ids': list(map(lambda add_id: {"identifier_type":add_id.identifier_type,"value":add_id.identifier_value},product.additional_identifiers)),
-        'additional_ids': [{"identifier_type":x.identifier_type, "value":x.identifier_value} for x in product_object.additional_identifiers],
+        'additional_ids': [{"identifier_type":x.identifier_type, "identifier_value":x.identifier_value} for x in product_object.additional_identifiers],
         'date_added': product_object.created_at.isoformat(),
     }
-    result = json.dumps(d,indent=4)
+    # result = json.dumps(d,indent=4)
 
-    return result
+    # return result
+    return product
 
 def search_product_by_product_id(product_id:str)-> list[dict] | None:
     """ Will try to find the product by product_id, you can pass an entire product_id or part of it. (Useful for active search)
@@ -284,7 +285,7 @@ def search_product_by_product_id(product_id:str)-> list[dict] | None:
             (Product.product_id.like(f"%{product_id}%"))  # Partial match (contains)
         )
 
-        matches = [convert_product_object_to_json(product) for product in results]
+        matches = [convert_product_object_to_dict(product) for product in results]
             
 
     return matches
@@ -308,7 +309,7 @@ def search_product_by_name(product_name:str)-> list[dict] | None:
             (func.lower(Product.product_name).like(f"%{product_name.lower()}%"))  # Partial match (contains)
         )
 
-        matches = [convert_product_object_to_json(product) for product in results]
+        matches = [convert_product_object_to_dict(product) for product in results]
             
 
     return matches
