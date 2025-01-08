@@ -1,6 +1,6 @@
 import uvicorn
 from typing import Annotated, List
-from fastapi import FastAPI, HTTPException, Body
+from fastapi import FastAPI, HTTPException, Body, Query
 from fastapi.responses import HTMLResponse, JSONResponse
 from  sqlalchemy.exc import IntegrityError
 from pydantic import BaseModel, Field
@@ -104,9 +104,6 @@ delete_prod_examples = {
             
     },
 }
-class DeleteProduct(BaseModel):
-    product_ids: List[str]
-    
 @app.delete("/products",responses=delete_prod_responses)
 def delete_product(product_ids: Annotated[list[str], Body(openapi_examples=delete_prod_examples)]) -> str:
 
@@ -120,7 +117,19 @@ def delete_product(product_ids: Annotated[list[str], Body(openapi_examples=delet
     #     raise HTTPException(status_code=400,detail="Product does not exist")
     return HTMLResponse(content="Product deleted successfully or not")
 
-#view product
+#search product
+@app.get("/products")
+def search_product(search: Annotated[str, Query(min_length=3)] ) -> dict:
+    """Search for a product by name.
+
+    Args:
+        name (str): The name of the product to search for.
+
+    Returns:
+        dict: A dictionary containing the product details.
+    """
+    # a = operations.search_product(name)
+    return HTMLResponse(search)
 
 
 
