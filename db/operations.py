@@ -137,37 +137,80 @@ def delete_shelves(shelf_ids:list[str]):
 
 ############# Containers #################
 
-def create_new_container(name:str,max_capacity:int) -> str:
-    """Creates a new container
+def create_new_container(name:str,max_capacity:int, quantity:int) -> str:
+    """Creates new containers.
 
     Args:
         name (str): The name of the container. (should be unique)
         max_capacity (int): The capacity of the container. (I still don't know how will I measure capacity)
+        quantity (int): How many containers of this type you would like to create.
 
     Returns:
         str: The unique identifier of the container created
     """
     
     # generates a unique identifier like the following  'c018b311e68b67759b54a08d172f04a09' 
-    identifier = f"c{secrets.token_hex(16)}"
-
+    identifiers = []
 
     with Session(engine) as session:
+        containers = []
+        for i in range(quantity):
 
-        container = Container(container_id = identifier, container_name = name, max_capacity = max_capacity, )
-        session.add(container)
+            identifier = f"c{secrets.token_hex(16)}"
+            identifiers.append(identifier)
+            containers.append(Container(container_id = identifier, container_name = name, max_capacity = max_capacity, ))
+
+        session.add_all(containers)
         session.commit()
-        
-    return identifier
 
+    return identifiers
 
-def lookup_container(id: str):
-    """Returns the information of the container by the provided container_id
-
+def delete_container(container_ids: list):
+    """Deletes a single or multiple containers. 
+    (Error handling is not implemented yet)
 
     Args:
-        id (str): _description_
+        container_ids (list): "A list of container ids to be deleted.\n
     """
+    
+    with Session(engine) as session:
+        for container_id in container_ids:
+            session.query(Container).filter(Container.container_id == container_id).delete()
+        session.commit()
+
+
+def add_product_to_container(product_id: str, container: str, quantity: int):
+    """Adds a single or multiple products to a container.
+
+    Args:
+        product_ids (list[str]): The id of the product to be added to the container. Example: "pfd3c0433307c5aec6139854829f1b008"
+        container (str): The id of the container. Example: 'cf8ddc0c29501413f16c3d5eabeb9a700'
+    """
+    with Session(engine) as session:
+        # check if the product is already in the container
+        cont = session.query(ContainerContent).filter(ContainerContent.product_id == product_id).first()
+
+        if cont:
+            cont.quantity += quantity
+            q = cont.quantity
+            session.commit()
+            return (container, product_id, q)
+
+
+        # if not, create a new relationship
+        else:
+            print("Product not in container")
+            cont  = ContainerContent(container_id=container, product_id=product_id, quantity=quantity)
+            session.add(cont)   
+            q = cont.quantity
+            session.commit()
+            return (container, product_id, q)
+
+
+# additional functions to be added
+# delete container, 
+# remove product from container
+# inspect container
 
     
     
