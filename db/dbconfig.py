@@ -57,6 +57,26 @@ class Container(Base):
 
     contents: Mapped[list['ContainerContent']] = relationship(back_populates='container')
 
+
+# --- ContainerProducts Table ---
+
+class ContainerContent(Base):
+    """Junction table between containers and products.\n
+    This table makes it possible to "store" products in a container.
+    """
+    __tablename__ = 'container_contents'
+    
+    content_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    container_id: Mapped[str] = mapped_column(ForeignKey('containers.container_id'), nullable=False)
+    product_id: Mapped[str] = mapped_column(ForeignKey('products.product_id'), nullable=False)
+    quantity: Mapped[int] = mapped_column(Integer, nullable=False)
+    added_at: Mapped[DateTime] = mapped_column(DateTime, default=func.now())
+
+    container: Mapped['Container'] = relationship(back_populates='contents')
+    product: Mapped['Product'] = relationship()
+
+
+
 # --- Shelves Table ---
 class Shelf(Base):
     """
@@ -72,20 +92,6 @@ class Shelf(Base):
     shelf_containers: Mapped[list['ShelfContainer']] = relationship(back_populates='shelf')
 
 # --- Container Contents Table ---
-class ContainerContent(Base):
-    """Junction table between containers and products.\n
-    This table makes it possible to "store" products in a container.
-    """
-    __tablename__ = 'container_contents'
-    
-    content_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    container_id: Mapped[str] = mapped_column(ForeignKey('containers.container_id'), nullable=False)
-    product_id: Mapped[str] = mapped_column(ForeignKey('products.product_id'), nullable=False)
-    quantity: Mapped[int] = mapped_column(Integer, nullable=False)
-    added_at: Mapped[DateTime] = mapped_column(DateTime, default=func.now())
-
-    container: Mapped['Container'] = relationship(back_populates='contents')
-    product: Mapped['Product'] = relationship()
 
 # --- Shelf Containers Table ---
 class ShelfContainer(Base):
