@@ -67,8 +67,9 @@ class ContainerContent(Base):
     __tablename__ = 'container_contents'
     
     content_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    container_id: Mapped[str] = mapped_column(ForeignKey('containers.container_id'), nullable=False,unique=True)
+    container_id: Mapped[str] = mapped_column(ForeignKey('containers.container_id'), nullable=False)
     product_id: Mapped[str] = mapped_column(ForeignKey('products.product_id'), nullable=False,unique=True)
+    quantity: Mapped[int] = mapped_column(Integer, nullable=False)
     added_at: Mapped[DateTime] = mapped_column(DateTime, default=func.now())
 
     container: Mapped['Container'] = relationship(back_populates='contents')
