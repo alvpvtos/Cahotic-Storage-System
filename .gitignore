@@ -177,3 +177,9 @@ cython_debug/
 db/alembic
 db/migrations
 db/alembic.ini
+
+# visual studio code configuration files
+.vscode/
+
+#old api files
+api_old/
