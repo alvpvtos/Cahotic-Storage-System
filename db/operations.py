@@ -165,7 +165,7 @@ def create_new_container(name:str,max_capacity:int, quantity:int) -> str:
 
     return identifiers
 
-def delete_container(container_ids: list):
+def delete_container(container_ids: list[str]):
     """Deletes a single or multiple containers. 
     (Error handling is not implemented yet)
 
@@ -188,9 +188,10 @@ def add_product_to_container(product_id: str, container: str, quantity: int):
     """
     with Session(engine) as session:
         # check if the product is already in the container
-        cont = session.query(ContainerContent).filter(ContainerContent.product_id == product_id).first()
+        cont = session.query(ContainerContent).filter(ContainerContent.container_id == container).first()
+        # not found
 
-        if cont:
+        if cont and product_id in cont.product_id:
             cont.quantity += quantity
             q = cont.quantity
             session.commit()
@@ -206,16 +207,27 @@ def add_product_to_container(product_id: str, container: str, quantity: int):
             session.commit()
             return (container, product_id, q)
 
-def unbind_product_from_container(product_id: str):
+def remove_product_from_container(product_id: str, quantity: int):
     """Removes or 'unbinds' a product from a container.
 
     Args:
         product_id (str): The unique identifier of the product.
+        quantity (int): The quantity of the product to be removed.
     """
     with Session(engine) as session:
-        stmt = delete(ContainerContent).where(ContainerContent.product_id == product_id)
-        session.execute(stmt)
-        session.commit()
+        cont_prod = session.query(ContainerContent).filter(ContainerContent.product_id == product_id).first()
+
+        if cont_prod:
+            cont_prod.quantity -= quantity
+            q = cont_prod.quantity
+            session.commit()
+            return (product_id, q)
+        else:
+            return (f"Product {product_id} not found in container", 0)
+
+        # stmt = delete(ContainerContent).where(ContainerContent.product_id == product_id)
+        # session.execute(stmt)
+        # session.commit()
 
 
 def inspect_container(container_id: str) -> dict:

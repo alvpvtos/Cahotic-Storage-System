@@ -245,9 +245,28 @@ def delete_container(container_ids: Annotated[list[str], Body(openapi_examples=d
 
 
 
-# @app.post("/containers/add_product_to_container")
-# def add_product_to_container(addition: ProductContainers):
+@app.post("/containers/product")
+def add_product_to_container(
+    product_id : str = Query(..., min_length=3, max_length=50, description="The unique identifier of the product"),
+    container_id: str = Query(..., min_length=3, max_length=50, description="The unique identifier of the container"),
+    count: int = Query(..., gt=0, description="Number of products to add to the container")
+):
+    """Add a product to a container.
+    """
+    operations.add_product_to_container(product_id, container_id, count)
+    return f"Product {product_id} added to container {container_id}"
 
+
+
+@app.delete("/containers/product")
+def add_product_to_container(
+    product_id : str = Query(..., min_length=3, max_length=50, description="The unique identifier of the product"),
+    quantity : int = Query(..., gt=1, description="Quantity of the product to remove from the container"),
+):
+    """Remove a product from a container. Only the product id is required.
+    """
+    operations.remove_product_from_container(product_id=product_id,quantity=quantity)
+    return f"Product {product_id} removed from container"
 
 ############### Shelves    ###############
 
