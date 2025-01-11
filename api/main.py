@@ -178,10 +178,79 @@ def search_product(search: Annotated[str, Query(min_length=3, )] ) -> list[Produ
     )
 
 
+############### Containers ###############
+
+create_cont_responses = {
+    200:{
+        "description": "Container created successfully",
+        "content": {
+            "application/json": {
+                "example":  [ 
+                    "cd0e1aa62028e812793af5d1703759fa8"
+                ]
+            }
+        }
+    },
+        
+}
+@app.post("/container", responses=create_cont_responses)
+def crete_container(
+    name: str = Query(..., min_length=3, max_length=50, description="Name of the container"),
+    max_capacity: int = Query(..., gt=0, description="Maximum capacity of the container. (There is no real use for this yet, I have not thought of a way to use it.)"),
+    quantity: int = Query(..., gt=0,description="Number of containers to create")
+):
+    """ Creates a single or multiple containers with the characteristics provided.
+
+    """
+    new_containers = operations.create_new_container(name=name, max_capacity=max_capacity, quantity=quantity)
+    # return f"Container {new_container} was successfully created"
+    return  new_containers
+
+
+delete_prod_examples = {
+    "normal": {
+        "summary": "Deleting a single container",
+        "description": "Delete a product by providing the product identifier. The product identifier is a unique identifier created when the product was created. This endpoint can be used to delete multiple products at the same time",
+        "value": ["ce376df18d1ce5dbbcb74d0c492a872be"]
+            
+    },
+
+    "multiple": {
+        "summary": "Deleting multiple containers",
+        "description": "Delete a product by providing the product identifier. The product identifier is a unique identifier created when the product was created. This endpoint can be used to delete multiple products at the same time",
+        "value": ["ce376df18d1ce5dbbcb74d0c492a872be", "cfd3c0433307c5aec6139854829f1b008", "c890e865336129d669c9a96d12cd2b9d6"]
+            
+    },
+}
+
+delete_cont_responses = {
+    200:{
+        "description": "Container created successfully",
+        "content": {
+            "application/json": {
+                "example":  [ 
+                    "cd0e1aa62028e812793af5d1703759fa8"
+                ]
+            }
+        }
+    },
+        
+}
+@app.delete("/containers", responses=delete_cont_responses)
+def delete_container(container_ids: Annotated[list[str], Body(openapi_examples=delete_prod_examples)]):
+    """Deletes a single or multiple containers.
+    """
+    container = operations.delete_container(container_ids)
+    return container_ids
+
+
+
+# @app.post("/containers/add_product_to_container")
+# def add_product_to_container(addition: ProductContainers):
 
 
 ############### Shelves    ###############
-############### Containers ###############
+
 
 # TODOs 
 
