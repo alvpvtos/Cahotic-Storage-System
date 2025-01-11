@@ -206,11 +206,34 @@ def add_product_to_container(product_id: str, container: str, quantity: int):
             session.commit()
             return (container, product_id, q)
 
+def unbind_product_from_container(product_id: str):
+    """Removes or 'unbinds' a product from a container.
 
-# additional functions to be added
-# delete container, 
-# remove product from container
-# inspect container
+    Args:
+        product_id (str): The unique identifier of the product.
+    """
+    with Session(engine) as session:
+        stmt = delete(ContainerContent).where(ContainerContent.product_id == product_id)
+        session.execute(stmt)
+        session.commit()
+
+
+def inspect_container(container_id: str) -> dict:
+    """ Returns a list of products inside a container.
+
+    Args:
+        container_id (str): The unique identifier of the container.  Example: (cf8ddc0c29501413f16c3d5eabeb9a700)
+
+    Returns:
+        dict: a dictionary containing the container_id and a list of products inside the container.
+    """
+    with  Session(engine) as session:
+        container = session.query(Container).filter(Container.container_id ==  container_id).first()
+
+        conts = [{"product_id": x.product_id, "quantity": x.quantity} for x in container.contents]
+
+        return {'container': container_id, "contents" :conts}
+
 
     
     
