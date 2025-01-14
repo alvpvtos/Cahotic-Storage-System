@@ -259,17 +259,68 @@ def add_product_to_container(
 
 
 @app.delete("/containers/product")
-def add_product_to_container(
+def remove_product_from_container(
     product_id : str = Query(..., min_length=3, max_length=50, description="The unique identifier of the product"),
-    quantity : int = Query(..., gt=1, description="Quantity of the product to remove from the container"),
+    container_id : str = Query(...,  min_length=3, max_length=50, description="The unique identifier of the container"),
+    quantity : int = Query(..., gt=0, description="Quantity of the product to remove from  container"),
+    
 ):
+    # the id of the container is needed in order to know where to remove the product from.
+
     """Remove a product from a container. Only the product id is required.
     """
-    operations.remove_product_from_container(product_id=product_id,quantity=quantity)
-    return f"Product {product_id} removed from container"
+    try:
+        
+        operations.remove_product_from_container(product_id=product_id, container_id=container_id, quantity=quantity)
+        return f"Product {product_id} removed from container"
+
+    except ValueError as e :
+        raise HTTPException(status_code=400, detail=e.args[0])
+        
+    
 
 ############### Shelves    ###############
 
+@app.post("/shelves")
+def create_shelf(
+    name: str = Query(..., min_length=3, max_length=50, description="Name of the shelf"),
+    max_capacity: int = Query(..., gt=0, description="Maximum capacity of the shelf. (There is no real use for this yet, I have not thought of a way to use it.)"),
+    # quantity: int = Query(..., gt=0,description="Number of shelves to create") (to be implemented)
+
+):
+    """ Creates a single shelf.
+
+    """
+    new_shelf = operations.create_new_shelf(name=name, max_capacity=max_capacity)
+    return  new_shelf
+
+# delete shelf
+
+delete_shelf_examples = {
+    "Single": {
+    "summary": "Deleting a single shelf",
+    "description": "Deleting a single shelf",
+    "value": ["se376df18d1ce5dbbcb74d0c492a872be"],
+    },
+
+    "Multiple": {
+    "summary": "Deleting multiple shelves",
+    "description": "Deleting multiple shelves",
+    "value": ["se376df18d1ce5dbbcb74d0c492a872be","s4600c099992f81e91b0f1423aa83f7db", "s4600c099992f81e91b0f1423aa83f7db"],
+    }
+}
+
+@app.delete("/shelves")
+def delete_shelves(shelf_id:  Annotated[list[str], Body(description="A list of unique shelf identifiers", openapi_examples=delete_shelf_examples)]):
+
+    """Deletes a single  or multiple shelves.
+    """
+
+    # error handling when shelf has containers in it to be implemented
+
+    operations.delete_shelves(shelf_id)
+    # return f"Shelf {shelf_id} deleted successfully"
+    return shelf_id
 
 # TODOs 
 
