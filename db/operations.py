@@ -240,6 +240,7 @@ def remove_product_from_container(product_id: str, container_id: str, quantity: 
             return (f"Product {product_id} not found in container")
 
 
+
 def inspect_container(container_id: str) -> dict:
     """ Returns a list of products inside a container.
 
@@ -250,11 +251,14 @@ def inspect_container(container_id: str) -> dict:
         dict: a dictionary containing the container_id and a list of products inside the container.
     """
     with  Session(engine) as session:
-        container = session.query(Container).filter(Container.container_id ==  container_id).first()
+        # container = session.query(Container).filter(Container.container_id ==  container_id).first()
+        stmt =  select(ContainerContent).where(ContainerContent.container_id == container_id)
+        ex = session.execute(statement=stmt)
+        results  = ex.scalars().all()
 
-        conts = [{"product_id": x.product_id, "quantity": x.quantity} for x in container.contents]
+        # conver to for loop for readability
 
-        return {'container': container_id, "contents" :conts}
+        return [{"product_id":x.product_id,"quantity": x.quantity} for x in results]
 
 
     
