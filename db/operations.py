@@ -200,7 +200,6 @@ def add_product_to_container(product_id: str, container_id: str, quantity: int):
 
         # if not, create a new relationship
         else:
-            print("Product not in container")
             cont  = ContainerContent(container_id=container_id, product_id=product_id, quantity=quantity)
             session.add(cont)   
             q = cont.quantity
