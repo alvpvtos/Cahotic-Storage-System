@@ -188,12 +188,15 @@ def add_product_to_container(product_id: str, container_id: str, quantity: int):
     """
     with Session(engine) as session:
         # check if the product is already in the container
-        cont = session.query(ContainerContent).filter(ContainerContent.container_id == container_id).first()
-        # not found
 
-        if cont and product_id in cont.product_id:
-            cont.quantity += quantity
-            q = cont.quantity
+        stmt =  select(ContainerContent).where(ContainerContent.product_id == product_id ).where(ContainerContent.container_id == container_id )
+        ex = session.execute(statement=stmt)
+        result  = ex.scalar()
+        # if it is, update the quantity
+
+        if result:
+            result.quantity += quantity
+            q = result.quantity
             session.commit()
             return (container_id, product_id, q)
 
