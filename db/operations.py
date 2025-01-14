@@ -179,7 +179,7 @@ def delete_container(container_ids: list[str]):
         session.commit()
 
 
-def add_product_to_container(product_id: str, container: str, quantity: int):
+def add_product_to_container(product_id: str, container_id: str, quantity: int):
     """Adds a single or multiple products to a container.
 
     Args:
@@ -188,26 +188,26 @@ def add_product_to_container(product_id: str, container: str, quantity: int):
     """
     with Session(engine) as session:
         # check if the product is already in the container
-        cont = session.query(ContainerContent).filter(ContainerContent.container_id == container).first()
+        cont = session.query(ContainerContent).filter(ContainerContent.container_id == container_id).first()
         # not found
 
         if cont and product_id in cont.product_id:
             cont.quantity += quantity
             q = cont.quantity
             session.commit()
-            return (container, product_id, q)
+            return (container_id, product_id, q)
 
 
         # if not, create a new relationship
         else:
             print("Product not in container")
-            cont  = ContainerContent(container_id=container, product_id=product_id, quantity=quantity)
+            cont  = ContainerContent(container_id=container_id, product_id=product_id, quantity=quantity)
             session.add(cont)   
             q = cont.quantity
             session.commit()
-            return (container, product_id, q)
+            return (container_id, product_id, q)
 
-def remove_product_from_container(product_id: str, quantity: int):
+def remove_product_from_container(product_id: str, container_id: str, quantity: int,):
     """Removes or 'unbinds' a product from a container.
 
     Args:
@@ -215,19 +215,27 @@ def remove_product_from_container(product_id: str, quantity: int):
         quantity (int): The quantity of the product to be removed.
     """
     with Session(engine) as session:
-        cont_prod = session.query(ContainerContent).filter(ContainerContent.product_id == product_id).first()
+        #update row if there is a relationship
+        # cont_prod = session.query(ContainerContent).filter(ContainerContent.product_id == product_id).first()
+        stmt =  select(ContainerContent).where(ContainerContent.container_id == container_id and ContainerContent.product_id == product_id)
+        ex = session.execute(statement=stmt)
+        results  = ex.scalar_one()
 
-        if cont_prod:
-            cont_prod.quantity -= quantity
-            q = cont_prod.quantity
+        if results:
+            
+            # raise error if subtraction is greater than quantity
+            if results.quantity < quantity:
+                raise ValueError(f"The amount of products to be removed  ({quantity}) is greater than available quantity ({results.quantity})")
+                # return (f"The amount of products to be removed  ({quantity}) is greater than available quantity ({results.quantity})")
+
+
+
+            results.quantity -= quantity
+            q = results.quantity
             session.commit()
-            return (product_id, q)
+            return (container_id, product_id, q)
         else:
-            return (f"Product {product_id} not found in container", 0)
-
-        # stmt = delete(ContainerContent).where(ContainerContent.product_id == product_id)
-        # session.execute(stmt)
-        # session.commit()
+            return (f"Product {product_id} not found in container")
 
 
 def inspect_container(container_id: str) -> dict:
