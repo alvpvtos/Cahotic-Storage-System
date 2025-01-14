@@ -216,7 +216,7 @@ def remove_product_from_container(product_id: str, container_id: str, quantity: 
     with Session(engine) as session:
         #update row if there is a relationship
         # cont_prod = session.query(ContainerContent).filter(ContainerContent.product_id == product_id).first()
-        stmt =  select(ContainerContent).where(ContainerContent.container_id == container_id and ContainerContent.product_id == product_id)
+        stmt =  select(ContainerContent).where(ContainerContent.product_id == product_id ).where(ContainerContent.container_id == container_id )
         ex = session.execute(statement=stmt)
         results  = ex.scalar_one()
 
