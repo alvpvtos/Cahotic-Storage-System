@@ -8,15 +8,18 @@ from db import operations
 app = FastAPI()
 
 ############### Models   ###############
+# request body of a product
 class Product(BaseModel):
     name:str
     description:str 
     additional_product_ids: None | list[dict]  = None
 
+
 class AdditionalIds(BaseModel):
     identifier_type: str
     identifier_value: str
 
+# response body of a prouct search
 class Product_Search_Result(BaseModel):
     name: str
     description: str
@@ -24,6 +27,10 @@ class Product_Search_Result(BaseModel):
     additional_ids : None | list[AdditionalIds]
     date_added: str
 
+#adding a container to a shelf
+class Container_Shelf(BaseModel):
+    container_id: str
+    shelf_id: str
     
 
 ############### Products   ###############
@@ -340,11 +347,57 @@ def delete_shelves(shelf_id:  Annotated[list[str], Body(description="A list of u
     # return f"Shelf {shelf_id} deleted successfully"
     return shelf_id
 
-@app.get("/shelves")
-def inspect_shelf(shelf_id:  Annotated[list[str], Body(description="Placeholder",)]):
-    return
 
 
+#add container to shelf
+
+add_container_examples = {
+    "single": {
+    "summary": "Adding multiple products to a single shelf",
+    "description": "Adding multiple products to a single shelf",
+    "value": [
+        {"container_id" :"c51441d2f4cfb275bf28c3b4f3c30afce",  
+        "shelf_id":"s4600c099992f81e91b0f1423aa83f7db"},
+        
+        {"container_id" :"cf8ddc0c29501413f16c3d5eabeb9a700",  
+        "shelf_id":"s4600c099992f81e91b0f1423aa83f7db"},
+
+        {"container_id" :"cdf92985c5e7b23191c7c1a2a49fd5f56",  
+        "shelf_id":"s4600c099992f81e91b0f1423aa83f7db"},
+        ],
+    },
+    
+    "multiple": {
+    "summary": "Adding multiple products to multiple shelves",
+    "description": "Adding multiple products to multiple shelves",
+    "value": [
+        {"container_id" :"c51441d2f4cfb275bf28c3b4f3c30afce",  
+        "shelf_id":"s4600c099992f81e91b0f1423aa83f7db"},
+        
+        {"container_id" :"cf8ddc0c29501413f16c3d5eabeb9a700",  
+        "shelf_id":"s223cd0ed5e0570b800cc6578b6b451f0"},
+
+        {"container_id" :"cdf92985c5e7b23191c7c1a2a49fd5f56",  
+        "shelf_id":"s223cd0ed5e0570b800cc6578b6b451f0"}
+        ],
+    },
+}
+@app.post("/shelves/container")
+def add_containers_to_shelves(containers: Annotated[list[Container_Shelf], Body(description="A list of containers to add to the shelf",openapi_examples=add_container_examples)]):   
+    """Adds containers to shelves.
+    """
+    operations.add_containers_to_shelf(containers)
+    return {"message": "Containers added to shelf"}
+
+
+
+# remove container from shelf
+#inspect shelf
+
+# @app.get("/shelves")
+# def inspect_shelf(shelf_id:  Annotated[list, Body(description="Placeholder")]):
+
+#     return
 # TODOs 
 
 if __name__ == "__main__":
