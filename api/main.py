@@ -13,7 +13,18 @@ class Product(BaseModel):
     description:str 
     additional_product_ids: None | list[dict]  = None
 
+class AdditionalIds(BaseModel):
+    identifier_type: str
+    identifier_value: str
 
+class Product_Search_Result(BaseModel):
+    name: str
+    description: str
+    product_id: int
+    additional_ids : None | list[AdditionalIds]
+    date_added: str
+
+    
 
 ############### Products   ###############
 #  create a new product
@@ -119,15 +130,7 @@ def delete_product(product_ids: Annotated[list[str], Body(openapi_examples=delet
 
 
 
-class AdditionalIds(BaseModel):
-    identifier_type: str
-    identifier_value: str
-class Product_Search_Result(BaseModel):
-    name: str
-    description: str
-    product_id: int
-    additional_ids : None | list[AdditionalIds]
-    date_added: str
+
 
 search_prod_responses = {
     200:{
@@ -243,6 +246,21 @@ def delete_container(container_ids: Annotated[list[str], Body(openapi_examples=d
     container = operations.delete_container(container_ids)
     return container_ids
 
+#inspec container contents
+
+@app.get("/containers")
+def inspect_container(container_id: Annotated[str, Query(..., min_length=3, max_length=50, description="The unique identifier of the container")]) -> list[dict]:
+
+
+    """Inspect the contents of a container.
+
+
+    """
+    result = operations.inspect_container(container_id)
+
+    return result
+
+
 
 
 @app.post("/containers/product")
@@ -321,6 +339,11 @@ def delete_shelves(shelf_id:  Annotated[list[str], Body(description="A list of u
     operations.delete_shelves(shelf_id)
     # return f"Shelf {shelf_id} deleted successfully"
     return shelf_id
+
+@app.get("/shelves")
+def inspect_shelf(shelf_id:  Annotated[list[str], Body(description="Placeholder",)]):
+    return
+
 
 # TODOs 
 
