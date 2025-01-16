@@ -347,6 +347,12 @@ def delete_shelves(shelf_id:  Annotated[list[str], Body(description="A list of u
     # return f"Shelf {shelf_id} deleted successfully"
     return shelf_id
 
+#inspect shelf
+
+@app.get("/shelves")
+def inspect_shelf(shelf_id =  Query(description="The id of the container to be searched")):
+    contents = operations.inspect_shelf_containers(shelf_id)
+    return {"containers":contents}
 
 
 #add container to shelf
@@ -413,10 +419,7 @@ def remove_container_from_shelf(
 
     return {"message": "Container removed from shelf"}
 
-#inspect shelf
 
-# @app.get("/shelves")
-# def inspect_shelf(shelf_id:  Annotated[list, Body(description="Placeholder")]):
 
 #     return
 # TODOs 
