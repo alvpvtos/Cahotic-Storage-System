@@ -392,6 +392,27 @@ def add_containers_to_shelves(containers: Annotated[list[Container_Shelf], Body(
 
 
 # remove container from shelf
+
+remove_container_examples = {
+    "Normal": {
+    "summary": "Removing a container from a shelf",
+    "description": "Remove a single or multiple containers from a shelf. The shelf id is not needed since one container should only be bound to a single shelf",
+    "value": [
+        "c51441d2f4cfb275bf28c3b4f3c30afce",
+        "cf8ddc0c29501413f16c3d5eabeb9a700"
+        ],
+    },
+}
+@app.delete("/shelves/container")
+def remove_container_from_shelf(
+    containers:  Annotated[list[str], Body(description="A list of container ids",openapi_examples=remove_container_examples)],
+):
+    """Removes a container from a shelf.
+    """
+    operations.unbind_containers_from_shelf(containers)
+
+    return {"message": "Container removed from shelf"}
+
 #inspect shelf
 
 # @app.get("/shelves")
@@ -401,4 +422,4 @@ def add_containers_to_shelves(containers: Annotated[list[Container_Shelf], Body(
 # TODOs 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, port=8000)
