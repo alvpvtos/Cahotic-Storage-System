@@ -108,4 +108,9 @@ class ShelfContainer(Base):
     shelf: Mapped['Shelf'] = relationship(back_populates='shelf_containers')
     container: Mapped['Container'] = relationship()
 
-Base.metadata.create_all(engine)
+
+
+if __name__ == "__main__":
+
+    Base.metadata.create_all(engine)
+    
