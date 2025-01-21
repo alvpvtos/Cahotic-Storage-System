@@ -1,7 +1,7 @@
 from sqlalchemy import String, Integer, Float, DateTime, ForeignKey, func, create_engine
 from sqlalchemy.orm import Mapped, mapped_column, relationship, DeclarativeBase, backref
 
-DATABASE_URL = "postgresql+psycopg2://username:password@localhost/dbname"
+DATABASE_URL = "postgresql+psycopg2://username:password@db/dbname"
 
 engine = create_engine(DATABASE_URL)
 
