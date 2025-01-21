@@ -1,7 +1,11 @@
 # The image created by this Dockerfile will not work unless there is a database with the following configuration
     #   and default port (5432) running on the host machine or network.
 
+            # When running with docker compose
+            # DATABASE_URL = "postgresql+psych2://username:password@db/dname"
+            # When running without docker compose
             # DATABASE_URL = "postgresql+psych2://username:password@localhost/dname"
+
 
 
 FROM python:3.11

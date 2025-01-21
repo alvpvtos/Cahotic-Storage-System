@@ -1,6 +1,7 @@
 from sqlalchemy import String, Integer, Float, DateTime, ForeignKey, func, create_engine
 from sqlalchemy.orm import Mapped, mapped_column, relationship, DeclarativeBase, backref
 
+#if this line gives you trouble when running locally try changing db to "localhost".
 DATABASE_URL = "postgresql+psycopg2://username:password@db/dbname"
 
 engine = create_engine(DATABASE_URL)
