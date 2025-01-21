@@ -1,0 +1,37 @@
+
+volumes:
+  pgdata:
+
+services:
+
+  web:
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+        restart: true
+        
+
+  db:
+
+    image: postgres:17
+    # DATABASE_URL = "postgresql+psycopg2://username:password@localhost/dbname"
+    environment:
+      POSTGRES_USER: username
+      POSTGRES_DB: dbname
+      POSTGRES_PASSWORD: password
+
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U username  -d dbname "]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+
+
+
