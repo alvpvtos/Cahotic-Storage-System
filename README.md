@@ -1,7 +1,7 @@
 
 # Chaotic-Storage-System
-> Note: This project is not ready for production. There are many features such as an user interface that need to be built and bugs that need to be fixed. 
-> If you have questions about it, do not hesitate to reach out to me via [email](mailto:cahoticss@alvpvtos.com).
+> Note: This  is not ready for production. There are many features such as an user interface that need to be built and bugs that need to be fixed. 
+> If you have questions about this project, do not hesitate to reach out to me via [email](mailto:cahoticss@alvpvtos.com).
 
 You might be asking yourself, "What the hell is a chaotic storage system?"
 Well, after thinking about it, I couldn't answer that question myself, so here is what the almighty ChatGPT had to say. 
